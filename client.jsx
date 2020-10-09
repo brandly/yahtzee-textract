@@ -23,6 +23,18 @@ const App = () => {
   const rows = columnsToRows(games)
 
   const gameForX = (x) => games.find((g) => g[0].coords.x === x)
+  const setValue = (coords, value) => {
+    const parsed = parseInt(value)
+    setGames(
+      games.map((g) =>
+        g.map((c) =>
+          c.coords.x === coords.x && c.coords.y === coords.y
+            ? { ...c, user: Number.isNaN(parsed) ? value : parsed }
+            : c
+        )
+      )
+    )
+  }
 
   return (
     <table>
@@ -36,7 +48,7 @@ const App = () => {
       <tbody>
         {rows.slice(1).map((row) => (
           <tr key={row[0].coords.y}>
-            {row.map(({ coords, parsed, text, confidence, field }) => {
+            {row.map(({ coords, parsed, text, confidence, field, user }) => {
               const missing = parsed === undefined
 
               const game = gameForX(coords.x)
@@ -66,7 +78,17 @@ const App = () => {
                   key={coords.x}
                   style={{ color: confidence < 70 ? 'red' : 'black' }}
                 >
-                  {missing ? <input type="text" /> : parsed}
+                  {missing ? (
+                    <input
+                      type="text"
+                      value={user || ''}
+                      onChange={(e) => {
+                        setValue(coords, e.target.value)
+                      }}
+                    />
+                  ) : (
+                    parsed
+                  )}
                 </td>
               )
             })}
@@ -79,8 +101,8 @@ const App = () => {
 
 const getTopSubtotal = (game) =>
   sum(
-    ['aces', 'twos', 'threes', 'fours', 'fives', 'sixes'].map(
-      (f) => getFieldByName(game, f).parsed
+    ['aces', 'twos', 'threes', 'fours', 'fives', 'sixes'].map((f) =>
+      getCellValue(getFieldByName(game, f))
     )
   )
 
@@ -94,8 +116,13 @@ const getLowerTotal = (game) =>
       'largeStraight',
       'YAHTZEE',
       'Chance'
-    ].map((f) => getFieldByName(game, f).parsed)
+    ].map((f) => getCellValue(getFieldByName(game, f)))
   )
+const getCellValue = (c) => {
+  if (typeof c.parsed === 'number') return c.parsed
+  if (typeof c.user === 'number') return c.user
+  return undefined
+}
 
 const getFieldByName = (game, field) => game.find((c) => c.field === field)
 
