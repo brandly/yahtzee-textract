@@ -124,6 +124,7 @@ const App = () => {
               return (
                 <td key={coords.x}>
                   <input
+                    tabindex={coords.x * 100 + coords.y}
                     type="number"
                     style={{
                       border: '1px solid black',
