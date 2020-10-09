@@ -42,6 +42,7 @@ api.post('/game', upload.single('file'), async (req, res) => {
 })
 
 server.use('/api', api)
+server.use(express.static('dist'))
 server.listen(port, () => {
   console.log(`Listening http://localhost:${port}`)
 })

@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "start": "parcel client.html"
+    "start": "parcel index.html",
+    "postinstall": "parcel build index.html"
   },
   "dependencies": {
     "aws-sdk": "2.770.0",
