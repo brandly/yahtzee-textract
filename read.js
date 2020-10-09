@@ -1,50 +1,49 @@
-const fs = require('fs')
 const { groupBy, sortBy, sum } = require('lodash')
 
-const { Blocks } = JSON.parse(fs.readFileSync(process.argv[2], 'utf-8'))
-const byId = Blocks.reduce((out, block) => {
-  out[block.Id] = block
-  return out
-}, {})
-const cells = Blocks.filter(({ BlockType }) => BlockType === 'CELL').map(
-  (block) => ({
-    ...block,
-    children: (block.Relationships || []).flatMap((r) =>
-      r.Ids.map((id) => byId[id])
-    )
-  })
-)
-const grouped = groupBy(cells, 'ColumnIndex')
-const columns = Object.keys(grouped)
-  .map((k) => parseInt(k))
-  .sort((a, b) => {
-    if (a < b) return -1
-    if (a > b) return 1
-    return 0
-  })
-  .map((key) => {
-    const column = grouped[key]
-    return column.map((c) => {
-      const words = c.children.filter(({ BlockType }) => BlockType === 'WORD')
-      const confidences = words.map(({ Confidence }) => Confidence)
-      return {
-        coords: {
-          x: c.ColumnIndex,
-          y: c.RowIndex
-        },
-        // hm
-        confidence: sum(confidences) / confidences.length,
-        text: words.map(({ Text }) => Text).join(' ')
-      }
+const textractToColumns = ({ Blocks }) => {
+  const byId = Blocks.reduce((out, block) => {
+    out[block.Id] = block
+    return out
+  }, {})
+  const cells = Blocks.filter(({ BlockType }) => BlockType === 'CELL').map(
+    (block) => ({
+      ...block,
+      children: (block.Relationships || []).flatMap((r) =>
+        r.Ids.map((id) => byId[id])
+      )
     })
-  })
+  )
+  const grouped = groupBy(cells, 'ColumnIndex')
+  return Object.keys(grouped)
+    .map((k) => parseInt(k))
+    .sort((a, b) => {
+      if (a < b) return -1
+      if (a > b) return 1
+      return 0
+    })
+    .map((key) => {
+      const column = grouped[key]
+      return column.map((c) => {
+        const words = c.children.filter(({ BlockType }) => BlockType === 'WORD')
+        const confidences = words.map(({ Confidence }) => Confidence)
+        return {
+          coords: {
+            x: c.ColumnIndex,
+            y: c.RowIndex
+          },
+          // hm
+          confidence: sum(confidences) / confidences.length,
+          text: words.map(({ Text }) => Text).join(' ')
+        }
+      })
+    })
+}
 
 const columnsToRows = (cols) => {
   const flat = cols.flatMap((c) => c)
   const grouped = groupBy(flat, 'coords.y')
   return Object.keys(grouped).map((key) => grouped[key])
 }
-const rows = columnsToRows(columns)
 
 // TODO:
 // decide old/new card type, decide where game columns start
@@ -138,7 +137,7 @@ const getGames = (columns) => {
 const viewGames = (games) => {
   const rows = columnsToRows(games)
   const cellField = 'parsed'
-  console.log(`<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <body>
   <head>
     <style>
@@ -172,11 +171,11 @@ const viewGames = (games) => {
     </tbody>
   </table>
 </body>
-`)
+`
 }
 
 const viewRows = (rows, cellField = 'text') => {
-  console.log(`<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <body>
   <table>
     <thead><tr>${rows[0]
@@ -195,11 +194,13 @@ const viewRows = (rows, cellField = 'text') => {
     </tbody>
   </table>
 </body>
-`)
+`
 }
 
-const main = () => {
-  viewGames(getGames(columns))
+module.exports = {
+  textractToColumns,
+  columnsToRows,
+  getGames,
+  viewGames,
+  viewRows
 }
-
-main()
