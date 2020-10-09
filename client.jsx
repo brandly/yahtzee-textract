@@ -38,28 +38,29 @@ const App = () => {
           <tr key={row[0].coords.y}>
             {row.map(({ coords, parsed, text, confidence, field }) => {
               const missing = parsed === undefined
-              if (field === 'topSubtotal') {
+
+              const game = gameForX(coords.x)
+              const topSubtotal = getTopSubtotal(game)
+              const topTotal =
+                topSubtotal >= 63 ? 35 + topSubtotal : topSubtotal
+              const lowerTotal = getLowerTotal(game)
+              const computed = {
+                topSubtotal: topSubtotal,
+                '63Bonus': topSubtotal >= 63 ? 35 : '-',
+                topTotal: topTotal,
+                lowerTotal: lowerTotal,
+                upperTotal: topTotal,
+                grandTotal: topTotal + lowerTotal
+              }
+
+              if (field in computed) {
                 return (
                   <td key={coords.x} style={{ fontWeight: 'bold' }}>
-                    {getTopSubtotal(gameForX(coords.x))}
+                    {computed[field]}
                   </td>
                 )
               }
-              if (field === '63Bonus') {
-                return (
-                  <td key={coords.x} style={{ fontWeight: 'bold' }}>
-                    {getTopSubtotal(gameForX(coords.x)) >= 63 ? 35 : '-'}
-                  </td>
-                )
-              }
-              if (field === 'topTotal') {
-                const topSubtotal = getTopSubtotal(gameForX(coords.x))
-                return (
-                  <td key={coords.x} style={{ fontWeight: 'bold' }}>
-                    {topSubtotal >= 63 ? 35 + topSubtotal : topSubtotal}
-                  </td>
-                )
-              }
+
               return (
                 <td
                   key={coords.x}
@@ -81,6 +82,19 @@ const getTopSubtotal = (game) =>
     ['aces', 'twos', 'threes', 'fours', 'fives', 'sixes'].map(
       (f) => getFieldByName(game, f).parsed
     )
+  )
+
+const getLowerTotal = (game) =>
+  sum(
+    [
+      '3kind',
+      '4kind',
+      'fullHouse',
+      'smallStraight',
+      'largeStraight',
+      'YAHTZEE',
+      'Chance'
+    ].map((f) => getFieldByName(game, f).parsed)
   )
 
 const getFieldByName = (game, field) => game.find((c) => c.field === field)

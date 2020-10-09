@@ -92,7 +92,7 @@ const tableMapping = {
       YAHTZEE: 17,
       Chance: 18,
       yahtzeeExtras: 19,
-      yahtzeeExtras: 20,
+      yahtzeeExtrasScore: 20,
       lowerTotal: 21,
       upperTotal: 22,
       grandTotal: 23
