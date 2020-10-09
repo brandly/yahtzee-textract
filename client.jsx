@@ -5,10 +5,13 @@ const { columnsToRows } = require('./read')
 const { sum } = require('lodash')
 
 const baseUrl =
-  process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:1235/api'
+  process.env.NODE_ENV === 'production'
+    ? '/api'
+    : `http://${document.location.hostname}:1235/api`
 
 const App = () => {
   const [games, setGames] = useState(null)
+  const [yToField, setYToField] = useState({})
 
   useEffect(() => {
     fetch(`${baseUrl}/static-game`, {
@@ -17,7 +20,10 @@ const App = () => {
       }
     })
       .then((res) => res.json())
-      .then(setGames)
+      .then(({ games, yToField }) => {
+        setGames(games)
+        setYToField(yToField)
+      })
   }, [])
   if (games === null) return 'Loading...'
   const rows = columnsToRows(games)
@@ -40,6 +46,7 @@ const App = () => {
     <table>
       <thead>
         <tr>
+          <th />
           {rows[0].map((_, index) => (
             <th key={index}>#{index + 1}</th>
           ))}
@@ -48,6 +55,7 @@ const App = () => {
       <tbody>
         {rows.map((row) => (
           <tr key={row[0].coords.y}>
+            <td>{yToField[row[0].coords.y]}</td>
             {row.map(({ coords, parsed, text, confidence, field, user }) => {
               const missing = parsed === undefined
 
