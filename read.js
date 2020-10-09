@@ -128,9 +128,16 @@ const getGames = (columns) => {
   const rows = columnsToRows(columns)
   const { fields, firstGameColumn } = tableMapping[getCardType(rows)]
   const games = columns.filter((c) => c[0].coords.x >= firstGameColumn)
-
+  const xToField = Object.keys(fields).reduce((out, field) => {
+    out[fields[field]] = field
+    return out
+  }, {})
   return games.map((g) =>
-    g.map((cell) => ({ ...cell, parsed: extractNumber(cell.text) }))
+    g.map((cell) => ({
+      ...cell,
+      field: xToField[cell.coords.x],
+      parsed: extractNumber(cell.text)
+    }))
   )
 }
 
