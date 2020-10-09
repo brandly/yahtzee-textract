@@ -15,5 +15,8 @@
   "devDependencies": {
     "cors": "2.8.5",
     "parcel-bundler": "1.12.4"
+  },
+  "engines": {
+    "node": "14.x"
   }
 }
