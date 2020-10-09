@@ -132,12 +132,19 @@ const getGames = (columns) => {
     out[fields[field]] = field
     return out
   }, {})
+  const relevantY = new Set(Object.keys(yToField).map((y) => parseInt(y)))
   return games.map((g) =>
-    g.map((cell) => ({
-      ...cell,
-      field: yToField[cell.coords.y],
-      parsed: extractNumber(cell.text)
-    }))
+    g.flatMap((cell) =>
+      relevantY.has(cell.coords.y)
+        ? [
+            {
+              ...cell,
+              field: yToField[cell.coords.y],
+              parsed: extractNumber(cell.text)
+            }
+          ]
+        : []
+    )
   )
 }
 

@@ -40,13 +40,13 @@ const App = () => {
     <table>
       <thead>
         <tr>
-          {rows[0].map(({ text }, index) => (
+          {rows[0].map((_, index) => (
             <th key={index}>#{index + 1}</th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {rows.slice(1).map((row) => (
+        {rows.map((row) => (
           <tr key={row[0].coords.y}>
             {row.map(({ coords, parsed, text, confidence, field, user }) => {
               const missing = parsed === undefined
