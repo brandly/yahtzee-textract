@@ -74,21 +74,18 @@ const App = () => {
               }
 
               return (
-                <td
-                  key={coords.x}
-                  style={{ color: confidence < 70 ? 'red' : 'black' }}
-                >
-                  {missing ? (
-                    <input
-                      type="text"
-                      value={user || ''}
-                      onChange={(e) => {
-                        setValue(coords, e.target.value)
-                      }}
-                    />
-                  ) : (
-                    parsed
-                  )}
+                <td key={coords.x}>
+                  <input
+                    type="number"
+                    style={{
+                      border: '1px solid black',
+                      borderColor: confidence < 70 ? 'red' : 'black'
+                    }}
+                    value={typeof user === 'number' ? user : parsed || ''}
+                    onChange={(e) => {
+                      setValue(coords, e.target.value)
+                    }}
+                  />
                 </td>
               )
             })}
@@ -119,8 +116,8 @@ const getLowerTotal = (game) =>
     ].map((f) => getCellValue(getFieldByName(game, f)))
   )
 const getCellValue = (c) => {
-  if (typeof c.parsed === 'number') return c.parsed
   if (typeof c.user === 'number') return c.user
+  if (typeof c.parsed === 'number') return c.parsed
   return undefined
 }
 
