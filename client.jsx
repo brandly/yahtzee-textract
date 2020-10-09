@@ -14,31 +14,36 @@ const App = () => {
   const [games, setGames] = useState(null)
   const [yToField, setYToField] = useState({})
   const [img, setImg] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   if (games === null)
     return (
       <>
         <input
+          disabled={loading}
           type="file"
           accept="image/*"
           onChange={(e) => {
-            downscale(e.target.files[0], 600, 900).then((dataUri) => {
-              setImg(dataUri)
-              const formData = new FormData()
-              formData.append('name', name)
-              formData.append('file', dataURItoBlob(dataUri))
+            setLoading(true)
+            downscale(e.target.files[0], 600, 900)
+              .then((dataUri) => {
+                setImg(dataUri)
+                const formData = new FormData()
+                formData.append('name', name)
+                formData.append('file', dataURItoBlob(dataUri))
 
-              fetch(`${baseUrl}/game`, {
-                method: 'post',
-                body: formData
-              })
-                .then((res) => res.json())
-                .then(({ games, yToField }) => {
-                  setGames(games)
-                  setYToField(yToField)
+                return fetch(`${baseUrl}/game`, {
+                  method: 'post',
+                  body: formData
                 })
-                .catch((err) => alert('File Upload Error'))
-            })
+              })
+              .then((res) => res.json())
+              .then(({ games, yToField }) => {
+                setGames(games)
+                setYToField(yToField)
+              })
+              .catch((err) => alert('File Upload Error'))
+              .finally(() => setLoading(false))
           }}
         />
         <button
@@ -57,6 +62,7 @@ const App = () => {
         >
           view static
         </button>
+        {loading && <p>Loading...</p>}
         {img && <img src={img} />}
       </>
     )
