@@ -3,6 +3,7 @@ const { useState, useEffect } = React
 const { render } = require('react-dom')
 const { columnsToRows } = require('./read')
 const { sum } = require('lodash')
+const downscale = require('downscale')
 
 const baseUrl =
   process.env.NODE_ENV === 'production'
@@ -12,6 +13,7 @@ const baseUrl =
 const App = () => {
   const [games, setGames] = useState(null)
   const [yToField, setYToField] = useState({})
+  const [img, setImg] = useState(null)
 
   if (games === null)
     return (
@@ -20,20 +22,23 @@ const App = () => {
           type="file"
           accept="image/*"
           onChange={(e) => {
-            const formData = new FormData()
-            formData.append('name', name)
-            formData.append('file', e.target.files[0])
+            downscale(e.target.files[0], 600, 900).then((dataUri) => {
+              setImg(dataUri)
+              const formData = new FormData()
+              formData.append('name', name)
+              formData.append('file', dataURItoBlob(dataUri))
 
-            fetch(`${baseUrl}/game`, {
-              method: 'post',
-              body: formData
-            })
-              .then((res) => res.json())
-              .then(({ games, yToField }) => {
-                setGames(games)
-                setYToField(yToField)
+              fetch(`${baseUrl}/game`, {
+                method: 'post',
+                body: formData
               })
-              .catch((err) => alert('File Upload Error'))
+                .then((res) => res.json())
+                .then(({ games, yToField }) => {
+                  setGames(games)
+                  setYToField(yToField)
+                })
+                .catch((err) => alert('File Upload Error'))
+            })
           }}
         />
         <button
@@ -52,6 +57,7 @@ const App = () => {
         >
           view static
         </button>
+        {img && <img src={img} />}
       </>
     )
   const rows = columnsToRows(games)
@@ -160,3 +166,29 @@ const getCellValue = (c) => {
 const getFieldByName = (game, field) => game.find((c) => c.field === field)
 
 render(<App />, document.getElementById('main'))
+
+// https://stackoverflow.com/a/7261048
+function dataURItoBlob(dataURI) {
+  // convert base64 to raw binary data held in a string
+  // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+  var byteString = atob(dataURI.split(',')[1])
+
+  // separate out the mime component
+  var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+
+  // write the bytes of the string to an ArrayBuffer
+  var ab = new ArrayBuffer(byteString.length)
+  var ia = new Uint8Array(ab)
+  for (var i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i)
+  }
+
+  //Old Code
+  //write the ArrayBuffer to a blob, and you're done
+  //var bb = new BlobBuilder();
+  //bb.append(ab);
+  //return bb.getBlob(mimeString);
+
+  //New Code
+  return new Blob([ab], { type: mimeString })
+}
