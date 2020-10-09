@@ -13,19 +13,47 @@ const App = () => {
   const [games, setGames] = useState(null)
   const [yToField, setYToField] = useState({})
 
-  useEffect(() => {
-    fetch(`${baseUrl}/static-game`, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-      .then((res) => res.json())
-      .then(({ games, yToField }) => {
-        setGames(games)
-        setYToField(yToField)
-      })
-  }, [])
-  if (games === null) return 'Loading...'
+  if (games === null)
+    return (
+      <>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const formData = new FormData()
+            formData.append('name', name)
+            formData.append('file', e.target.files[0])
+
+            fetch(`${baseUrl}/game`, {
+              method: 'post',
+              body: formData
+            })
+              .then((res) => res.json())
+              .then(({ games, yToField }) => {
+                setGames(games)
+                setYToField(yToField)
+              })
+              .catch((err) => alert('File Upload Error'))
+          }}
+        />
+        <button
+          onClick={() => {
+            fetch(`${baseUrl}/static-game`, {
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            })
+              .then((res) => res.json())
+              .then(({ games, yToField }) => {
+                setGames(games)
+                setYToField(yToField)
+              })
+          }}
+        >
+          view static
+        </button>
+      </>
+    )
   const rows = columnsToRows(games)
 
   const gameForX = (x) => games.find((g) => g[0].coords.x === x)

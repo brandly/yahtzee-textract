@@ -1,6 +1,8 @@
 const express = require('express')
 const fs = require('fs')
+const multer = require('multer')
 const { getGames, textractToColumns, viewGames } = require('./read')
+const { analyzeDocument } = require('./textract')
 
 const server = express()
 if (process.env.NODE_ENV !== 'production') {
@@ -26,6 +28,17 @@ api.get('/static-game', (req, res) => {
       return
     }
   })
+})
+
+const upload = multer()
+api.post('/game', upload.single('file'), async (req, res) => {
+  try {
+    const data = await analyzeDocument(req.file.buffer)
+    res.json(getGames(textractToColumns(data)))
+  } catch (e) {
+    console.error(e)
+    res.status(500).send(e.toString())
+  }
 })
 
 server.use('/api', api)
