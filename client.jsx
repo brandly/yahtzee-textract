@@ -105,12 +105,12 @@ const App = () => {
                 topSubtotal >= 63 ? 35 + topSubtotal : topSubtotal
               const lowerTotal = getLowerTotal(game)
               const computed = {
-                topSubtotal: topSubtotal,
-                '63Bonus': topSubtotal >= 63 ? 35 : '-',
-                topTotal: topTotal,
-                lowerTotal: lowerTotal,
-                upperTotal: topTotal,
-                grandTotal: topTotal + lowerTotal
+                'Top Subtotal': topSubtotal,
+                '63 Bonus': topSubtotal >= 63 ? 35 : '-',
+                'Top Total': topTotal,
+                'Lower Total': lowerTotal,
+                'Upper Total': topTotal,
+                'Grand Total': topTotal + lowerTotal
               }
 
               if (field in computed) {
@@ -118,7 +118,10 @@ const App = () => {
                   ? '--'
                   : computed[field]
                 return (
-                  <td key={coords.x} style={{ fontWeight: 'bold' }}>
+                  <td
+                    key={coords.x}
+                    style={{ fontWeight: 'bold', padding: '2px 4px' }}
+                  >
                     {value}
                   </td>
                 )
@@ -140,7 +143,7 @@ const App = () => {
                     style={{
                       border: '1px solid black',
                       borderColor:
-                        confidence < 70 && !missing ? '#c33939' : '#999'
+                        confidence < 70 && !missing ? '#c33939' : 'transparent'
                     }}
                     value={value}
                     onChange={(e) => {
@@ -159,19 +162,20 @@ const App = () => {
 
 const getTopSubtotal = (game) =>
   sum(
-    ['aces', 'twos', 'threes', 'fours', 'fives', 'sixes'].map((f) =>
+    ['Aces', 'Twos', 'Threes', 'Fours', 'Fives', 'Sixes'].map((f) =>
       getCellValue(getFieldByName(game, f))
     )
   )
 
 const getLowerTotal = (game) =>
+  // TODO: bonus yahtzees
   sum(
     [
-      '3kind',
-      '4kind',
-      'fullHouse',
-      'smallStraight',
-      'largeStraight',
+      '3 of a Kind',
+      '4 of a Kind',
+      'Full House',
+      'Small Straight',
+      'Large Straight',
       'YAHTZEE',
       'Chance'
     ].map((f) => getCellValue(getFieldByName(game, f)))
