@@ -135,6 +135,39 @@ const App = () => {
                 value = parsed
               }
 
+              const { step, max } = (() => {
+                switch (field) {
+                  case 'Aces':
+                    return { step: 1, max: 5 }
+                  case 'Twos':
+                    return { step: 2, max: 10 }
+                  case 'Threes':
+                    return { step: 3, max: 15 }
+                  case 'Fours':
+                    return { step: 4, max: 20 }
+                  case 'Fives':
+                    return { step: 5, max: 25 }
+                  case 'Sixes':
+                    return { step: 6, max: 30 }
+                  case '3 of a Kind':
+                    return { step: 1, max: 30 }
+                  case '4 of a Kind':
+                    return { step: 1, max: 30 }
+                  case 'Full House':
+                    return { step: 25, max: 25 }
+                  case 'Small Straight':
+                    return { step: 30, max: 30 }
+                  case 'Large Straight':
+                    return { step: 40, max: 40 }
+                  case 'YAHTZEE':
+                    return { step: 50, max: 50 }
+                  case 'Chance':
+                    return { step: 1, max: 30 }
+                  default:
+                    return { step: 1 }
+                }
+              })()
+
               return (
                 <td key={coords.x}>
                   <input
@@ -149,6 +182,9 @@ const App = () => {
                     onChange={(e) => {
                       setValue(coords, e.target.value)
                     }}
+                    step={step}
+                    min={0}
+                    max={max}
                   />
                 </td>
               )
