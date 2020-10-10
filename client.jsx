@@ -114,9 +114,12 @@ const App = () => {
               }
 
               if (field in computed) {
+                const value = Number.isNaN(computed[field])
+                  ? '--'
+                  : computed[field]
                 return (
                   <td key={coords.x} style={{ fontWeight: 'bold' }}>
-                    {computed[field]}
+                    {value}
                   </td>
                 )
               }
