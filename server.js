@@ -17,14 +17,19 @@ api.get('/static-game', (req, res) => {
       res.status(500).send(error.toString())
       return
     }
-    const fromFile = JSON.parse(data)
-    const columns = textractToColumns(fromFile)
-    const games = getGames(columns)
-    if (req.headers['content-type'] === 'application/json') {
-      res.json(games)
-      return
-    } else {
-      res.send(viewGames(games))
+    try {
+      const fromFile = JSON.parse(data)
+      const columns = textractToColumns(fromFile)
+      const games = getGames(columns)
+      if (req.headers['content-type'] === 'application/json') {
+        res.json(games)
+        return
+      } else {
+        res.send(viewGames(games))
+        return
+      }
+    } catch (e) {
+      res.status(500).send(e.toString())
       return
     }
   })
