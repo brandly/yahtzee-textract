@@ -139,7 +139,8 @@ const App = () => {
                     type="number"
                     style={{
                       border: '1px solid black',
-                      borderColor: confidence < 70 ? 'red' : 'black'
+                      borderColor:
+                        confidence < 70 && !missing ? '#c33939' : '#999'
                     }}
                     value={value}
                     onChange={(e) => {
