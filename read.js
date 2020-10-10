@@ -45,12 +45,6 @@ const columnsToRows = (cols) => {
   return Object.keys(grouped).map((key) => grouped[key])
 }
 
-// TODO:
-// decide old/new card type, decide where game columns start
-// be forgiving of certain characters
-//    helps to know which cells should be numbers
-//    also knowing that e.g. you're in 6s, the value is a multiple of 6
-
 const getCardType = (rows) => {
   const header = rows[0]
   if (
@@ -71,32 +65,38 @@ const getCardType = (rows) => {
   return null
 }
 
+const commonFields = {
+  Aces: 2,
+  Twos: 3,
+  Threes: 4,
+  Fours: 5,
+  Fives: 6,
+  Sixes: 7,
+  'Top Subtotal': 8,
+  '63 Bonus': 9,
+  'Top Total': 10,
+  '3 of a Kind': 12,
+  '4 of a Kind': 13,
+  'Full House': 14,
+  'Small Straight': 15,
+  'Large Straight': 16,
+  YAHTZEE: 17,
+  Chance: 18,
+  yahtzeeExtras: 19,
+  yahtzeeExtrasScore: 20,
+  'Lower Total': 21,
+  'Upper Total': 22,
+  'Grand Total': 23
+}
+
 const tableMapping = {
   new: {
     firstGameColumn: 4,
-    fields: {
-      Aces: 2,
-      Twos: 3,
-      Threes: 4,
-      Fours: 5,
-      Fives: 6,
-      Sixes: 7,
-      'Top Subtotal': 8,
-      '63 Bonus': 9,
-      'Top Total': 10,
-      '3 of a Kind': 12,
-      '4 of a Kind': 13,
-      'Full House': 14,
-      'Small Straight': 15,
-      'Large Straight': 16,
-      YAHTZEE: 17,
-      Chance: 18,
-      yahtzeeExtras: 19,
-      yahtzeeExtrasScore: 20,
-      'Lower Total': 21,
-      'Upper Total': 22,
-      'Grand Total': 23
-    }
+    fields: commonFields
+  },
+  old: {
+    firstGameColumn: 3,
+    fields: commonFields
   }
 }
 
@@ -126,12 +126,17 @@ const extractNumber = (value) => {
 
 const getGames = (columns) => {
   const rows = columnsToRows(columns)
-  const { fields, firstGameColumn } = tableMapping[getCardType(rows)]
+  const cardType = getCardType(rows)
+  if (!(cardType in tableMapping)) {
+    throw new Error(`Unable to handle card type "${cardType}"`)
+  }
+  const { fields, firstGameColumn } = tableMapping[cardType]
   const games = columns.filter((c) => c[0].coords.x >= firstGameColumn)
   const yToField = Object.keys(fields).reduce((out, field) => {
     out[fields[field]] = field
     return out
   }, {})
+
   const relevantY = new Set(Object.keys(yToField).map((y) => parseInt(y)))
   return {
     yToField,
