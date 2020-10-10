@@ -124,6 +124,14 @@ const App = () => {
                 )
               }
 
+              let value = ''
+              if (typeof user === 'number') {
+                value = user
+              }
+              if (typeof parsed === 'number') {
+                value = parsed
+              }
+
               return (
                 <td key={coords.x}>
                   <input
@@ -133,7 +141,7 @@ const App = () => {
                       border: '1px solid black',
                       borderColor: confidence < 70 ? 'red' : 'black'
                     }}
-                    value={typeof user === 'number' ? user : parsed || ''}
+                    value={value}
                     onChange={(e) => {
                       setValue(coords, e.target.value)
                     }}
