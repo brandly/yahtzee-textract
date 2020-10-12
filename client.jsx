@@ -37,12 +37,18 @@ const App = () => {
                   body: formData
                 })
               })
-              .then((res) => res.json())
+              .then((res) => {
+                if (res.ok) return res.json()
+
+                return res.json().then(({ message }) => {
+                  throw new Error(message)
+                })
+              })
               .then(({ games, yToField }) => {
                 setGames(games)
                 setYToField(yToField)
               })
-              .catch((err) => alert('File Upload Error'))
+              .catch((err) => alert(err.toString()))
               .finally(() => setLoading(false))
           }}
         />

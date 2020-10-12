@@ -14,7 +14,7 @@ const api = express()
 api.get('/static-game', (req, res) => {
   fs.readFile('./output-new.json', 'utf-8', (error, data) => {
     if (error) {
-      res.status(500).send(error.toString())
+      res.status(500).send({ message: error.toString() })
       return
     }
     try {
@@ -29,7 +29,7 @@ api.get('/static-game', (req, res) => {
         return
       }
     } catch (e) {
-      res.status(500).send(e.toString())
+      res.status(500).send({ message: e.toString() })
       return
     }
   })
@@ -42,7 +42,7 @@ api.post('/game', upload.single('file'), async (req, res) => {
     res.json(getGames(textractToColumns(data)))
   } catch (e) {
     console.error(e)
-    res.status(500).send(e.toString())
+    res.status(500).send({ message: e.toString() })
   }
 })
 
