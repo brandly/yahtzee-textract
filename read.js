@@ -40,29 +40,32 @@ const textractToColumns = ({ Blocks }) => {
 }
 
 const columnsToRows = (cols) => {
+  // console.log('cols', cols)
   const flat = cols.flatMap((c) => c)
   const grouped = groupBy(flat, 'coords.y')
   return Object.keys(grouped).map((key) => grouped[key])
 }
 
 const getCardType = (rows) => {
-  const header = rows[0]
-  if (
-    header[0].text === 'UPPER SECTION' &&
-    header[1].text === 'HOW TO SCORE' &&
-    header[2].text === ''
-  ) {
-    return 'old'
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]
+    if (
+      row[0].text === 'UPPER SECTION' &&
+      row[1].text === 'HOW TO SCORE' &&
+      row[2].text === ''
+    ) {
+      return { type: 'old', offset: i }
+    }
+    if (
+      row[0].text === 'UPPER SECTION' &&
+      row[1].text === '' &&
+      row[2].text === 'HOW TO SCORE' &&
+      row[3].text === 'GAME #1'
+    ) {
+      return { type: 'new', offset: i }
+    }
   }
-  if (
-    header[0].text === 'UPPER SECTION' &&
-    header[1].text === '' &&
-    header[2].text === 'HOW TO SCORE' &&
-    header[3].text === 'GAME #1'
-  ) {
-    return 'new'
-  }
-  return null
+  return { type: null, offset: 0 }
 }
 
 const commonFields = {
@@ -126,11 +129,12 @@ const extractNumber = (value) => {
 
 const getGames = (columns) => {
   const rows = columnsToRows(columns)
-  const cardType = getCardType(rows)
-  if (!(cardType in tableMapping)) {
-    throw new Error(`Unable to handle card type "${cardType}"`)
+  const { type, offset } = getCardType(rows)
+  if (!(type in tableMapping)) {
+    console.error(JSON.stringify(rows, null, 2))
+    throw new Error(`Unable to handle card type "${type}"`)
   }
-  const { fields, firstGameColumn } = tableMapping[cardType]
+  const { fields, firstGameColumn } = tableMapping[type]
   const games = columns.filter((c) => c[0].coords.x >= firstGameColumn)
   const yToField = Object.keys(fields).reduce((out, field) => {
     out[fields[field]] = field
@@ -142,11 +146,11 @@ const getGames = (columns) => {
     yToField,
     games: games.map((g) =>
       g.flatMap((cell) =>
-        relevantY.has(cell.coords.y)
+        relevantY.has(cell.coords.y - offset)
           ? [
               {
                 ...cell,
-                field: yToField[cell.coords.y],
+                field: yToField[cell.coords.y - offset],
                 parsed: extractNumber(cell.text)
               }
             ]
@@ -156,7 +160,7 @@ const getGames = (columns) => {
   }
 }
 
-const viewGames = (games) => {
+const viewGames = ({ games }) => {
   const rows = columnsToRows(games)
   const cellField = 'parsed'
   return `<!DOCTYPE html>
@@ -209,7 +213,12 @@ const viewRows = (rows, cellField = 'text') => {
         .map(
           (row) =>
             `<tr>${row
-              .map((cell) => `<td>${cell[cellField] || ''}</td>`)
+              .map(
+                (cell) =>
+                  `<td class="x${cell.coords.x} y${cell.coords.y}">${
+                    cell[cellField] || ''
+                  }</td>`
+              )
               .join('')}</tr>`
         )
         .join('')}

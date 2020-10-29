@@ -1,7 +1,13 @@
 const express = require('express')
 const fs = require('fs')
 const multer = require('multer')
-const { getGames, textractToColumns, viewGames } = require('./read')
+const {
+  getGames,
+  textractToColumns,
+  viewGames,
+  viewRows,
+  columnsToRows
+} = require('./read')
 const { analyzeDocument } = require('./textract')
 
 const server = express()
@@ -12,7 +18,25 @@ const port = process.env.PORT || 1235
 
 const api = express()
 api.get('/static-game', (req, res) => {
-  fs.readFile('./output-new.json', 'utf-8', (error, data) => {
+  fs.readdir('./static', (err, data) => {
+    if (err) {
+      res.send(err)
+      return
+    }
+    res.send(
+      data
+        .map((filename) => {
+          const f = filename.split('.')[0]
+          return `<a href="./static-game/${f}">${f}</a>`
+        })
+        .join('\n')
+    )
+  })
+})
+
+api.get('/static-game/:filename', (req, res) => {
+  const { filename } = req.params
+  fs.readFile(`./static/${filename}.json`, 'utf-8', (error, data) => {
     if (error) {
       res.status(500).send({ message: error.toString() })
       return
@@ -25,6 +49,10 @@ api.get('/static-game', (req, res) => {
         res.json(games)
         return
       } else {
+        if ('raw' in req.query) {
+          res.send(viewRows(columnsToRows(columns)))
+          return
+        }
         res.send(viewGames(games))
         return
       }
@@ -37,10 +65,15 @@ api.get('/static-game', (req, res) => {
 
 const upload = multer()
 api.post('/game', upload.single('file'), async (req, res) => {
+  let data
   try {
-    const data = await analyzeDocument(req.file.buffer)
+    data = await analyzeDocument(req.file.buffer)
     res.json(getGames(textractToColumns(data)))
   } catch (e) {
+    fs.writeFileSync(
+      `./static/fail-${Date.now()}.json`,
+      JSON.stringify(data, null, 2)
+    )
     console.error(e)
     res.status(500).send({ message: e.toString() })
   }
