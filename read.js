@@ -54,7 +54,15 @@ const getCardType = (rows) => {
       row[1].text === 'HOW TO SCORE' &&
       row[2].text === ''
     ) {
-      return { type: 'old', offset: i }
+      return { fields: commonFields, offset: { x: 4, y: i } }
+    }
+    if (
+      row[0].text === 'UPPER' &&
+      row[1].text === '' &&
+      row[2].text === 'SECTION' &&
+      row[3].text === 'HOW TO SCORE'
+    ) {
+      return { fields: commonFields, offset: { x: 5, y: i } }
     }
     if (
       row[0].text === 'UPPER SECTION' &&
@@ -62,10 +70,10 @@ const getCardType = (rows) => {
       row[2].text === 'HOW TO SCORE' &&
       row[3].text === 'GAME #1'
     ) {
-      return { type: 'new', offset: i }
+      return { fields: commonFields, offset: { x: 3, y: i } }
     }
   }
-  return { type: null, offset: 0 }
+  return { fields: commonFields, offset: { x: 0, y: 0 } }
 }
 
 const commonFields = {
@@ -90,17 +98,6 @@ const commonFields = {
   'Lower Total': 21,
   'Upper Total': 22,
   'Grand Total': 23
-}
-
-const tableMapping = {
-  new: {
-    firstGameColumn: 4,
-    fields: commonFields
-  },
-  old: {
-    firstGameColumn: 3,
-    fields: commonFields
-  }
 }
 
 const extractNumber = (value) => {
@@ -129,13 +126,8 @@ const extractNumber = (value) => {
 
 const getGames = (columns) => {
   const rows = columnsToRows(columns)
-  const { type, offset } = getCardType(rows)
-  if (!(type in tableMapping)) {
-    console.error(JSON.stringify(rows, null, 2))
-    throw new Error(`Unable to handle card type "${type}"`)
-  }
-  const { fields, firstGameColumn } = tableMapping[type]
-  const games = columns.filter((c) => c[0].coords.x >= firstGameColumn)
+  const { offset, fields } = getCardType(rows)
+  const games = columns.filter((c) => c[0].coords.x >= offset.x)
   const yToField = Object.keys(fields).reduce((out, field) => {
     out[fields[field]] = field
     return out
@@ -146,11 +138,11 @@ const getGames = (columns) => {
     yToField,
     games: games.map((g) =>
       g.flatMap((cell) =>
-        relevantY.has(cell.coords.y - offset)
+        relevantY.has(cell.coords.y - offset.y)
           ? [
               {
                 ...cell,
-                field: yToField[cell.coords.y - offset],
+                field: yToField[cell.coords.y - offset.y],
                 parsed: extractNumber(cell.text)
               }
             ]

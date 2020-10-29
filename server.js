@@ -23,12 +23,14 @@ api.get('/static-game', (req, res) => {
       res.send(err)
       return
     }
+    const namesNoExtensions = data.map((filename) => filename.split('.')[0])
+    if (req.headers.accept === 'application/json') {
+      res.json(namesNoExtensions)
+      return
+    }
     res.send(
-      data
-        .map((filename) => {
-          const f = filename.split('.')[0]
-          return `<a href="./static-game/${f}">${f}</a>`
-        })
+      namesNoExtensions
+        .map((f) => `<a href="./static-game/${f}">${f}</a>`)
         .join('\n')
     )
   })
@@ -44,18 +46,22 @@ api.get('/static-game/:filename', (req, res) => {
     try {
       const fromFile = JSON.parse(data)
       const columns = textractToColumns(fromFile)
-      const games = getGames(columns)
-      if (req.headers['content-type'] === 'application/json') {
+      if (req.headers.accept === 'application/json') {
+        const games = getGames(columns)
         res.json(games)
         return
-      } else {
-        if ('raw' in req.query) {
-          res.send(viewRows(columnsToRows(columns)))
-          return
-        }
-        res.send(viewGames(games))
+      }
+      if ('raw' in req.query) {
+        res.json(fromFile)
         return
       }
+      if ('rows' in req.query) {
+        res.json(columnsToRows(columns))
+        return
+      }
+      const games = getGames(columns)
+      res.send(viewGames(games))
+      return
     } catch (e) {
       res.status(500).send({ message: e.toString() })
       return

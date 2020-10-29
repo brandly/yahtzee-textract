@@ -15,6 +15,7 @@ const App = () => {
   const [yToField, setYToField] = useState({})
   const [img, setImg] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [viewStatic, setViewStatic] = useState(false)
 
   if (games === null)
     return (
@@ -52,23 +53,24 @@ const App = () => {
               .finally(() => setLoading(false))
           }}
         />
-        <button
-          onClick={() => {
-            fetch(`${baseUrl}/static-game`, {
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            })
-              .then((res) => res.json())
-              .then(({ games, yToField }) => {
-                setGames(games)
-                setYToField(yToField)
-              })
-          }}
-        >
-          view static
-        </button>
+        {process.env.NODE_ENV !== 'production' && (
+          <button
+            onClick={() => {
+              setViewStatic(true)
+            }}
+          >
+            view static
+          </button>
+        )}
         {loading && <p>Loading...</p>}
+        {viewStatic && (
+          <StaticList
+            onSelect={({ games, yToField }) => {
+              setGames(games)
+              setYToField(yToField)
+            }}
+          />
+        )}
         {img && <img src={img} />}
       </>
     )
@@ -136,8 +138,7 @@ const App = () => {
               let value = ''
               if (typeof user === 'number') {
                 value = user
-              }
-              if (typeof parsed === 'number') {
+              } else if (typeof parsed === 'number') {
                 value = parsed
               }
 
@@ -177,7 +178,7 @@ const App = () => {
               return (
                 <td key={coords.x}>
                   <input
-                    tabindex={coords.x * 100 + coords.y}
+                    tabIndex={coords.x * 100 + coords.y}
                     type="number"
                     style={{
                       border: '1px solid black',
@@ -199,6 +200,39 @@ const App = () => {
         ))}
       </tbody>
     </table>
+  )
+}
+
+const StaticList = ({ onSelect }) => {
+  const [list, setList] = useState([])
+  useEffect(() => {
+    fetch(`${baseUrl}/static-game`, {
+      headers: {
+        Accept: 'application/json'
+      }
+    })
+      .then((res) => res.json())
+      .then(setList)
+  }, [])
+  return (
+    <ul>
+      {list.map((file) => (
+        <li
+          key={file}
+          onClick={() => {
+            fetch(`${baseUrl}/static-game/${file}`, {
+              headers: {
+                Accept: 'application/json'
+              }
+            })
+              .then((res) => res.json())
+              .then(onSelect)
+          }}
+        >
+          {file}
+        </li>
+      ))}
+    </ul>
   )
 }
 
