@@ -16,6 +16,7 @@ The client will build when you make changes and auto-refresh your browser.
 
 ```
 $ npm start
+$ open http://localhost:1234/
 ```
 
 ### deploy
