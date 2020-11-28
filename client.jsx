@@ -136,7 +136,7 @@ const App = () => {
               }
 
               let value = ''
-              if (typeof user === 'number') {
+              if (typeof user !== 'undefined') {
                 value = user
               } else if (typeof parsed === 'number') {
                 value = parsed
@@ -258,6 +258,7 @@ const getLowerTotal = (game) =>
   )
 const getCellValue = (c) => {
   if (typeof c.user === 'number') return c.user
+  if (c.user === '') return 0
   if (typeof c.parsed === 'number') return c.parsed
   return undefined
 }
