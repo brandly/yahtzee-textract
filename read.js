@@ -93,8 +93,7 @@ const commonFields = {
   'Large Straight': 16,
   YAHTZEE: 17,
   Chance: 18,
-  yahtzeeExtras: 19,
-  yahtzeeExtrasScore: 20,
+  'YAHTZEE BONUS': 19,
   'Lower Total': 21,
   'Upper Total': 22,
   'Grand Total': 23

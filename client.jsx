@@ -170,6 +170,8 @@ const App = () => {
                     return { step: 50, max: 50 }
                   case 'Chance':
                     return { step: 1, max: 30 }
+                  case 'YAHTZEE BONUS':
+                    return { step: 100, max: 500 }
                   default:
                     return { step: 1 }
                 }
@@ -244,7 +246,6 @@ const getTopSubtotal = (game) =>
   )
 
 const getLowerTotal = (game) =>
-  // TODO: bonus yahtzees
   sum(
     [
       '3 of a Kind',
@@ -253,7 +254,8 @@ const getLowerTotal = (game) =>
       'Small Straight',
       'Large Straight',
       'YAHTZEE',
-      'Chance'
+      'Chance',
+      'YAHTZEE BONUS'
     ].map((f) => getCellValue(getFieldByName(game, f)))
   )
 const getCellValue = (c) => {
@@ -265,7 +267,13 @@ const getCellValue = (c) => {
 
 const getFieldByName = (game, field) => game.find((c) => c.field === field)
 
-render(<App />, document.getElementById('main'))
+render(
+  <>
+    <h1>Yahtzee!</h1>
+    <App />
+  </>,
+  document.getElementById('main')
+)
 
 // https://stackoverflow.com/a/7261048
 function dataURItoBlob(dataURI) {
