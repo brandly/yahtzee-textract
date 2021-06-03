@@ -5,7 +5,6 @@ const {
   getGames,
   textractToColumns,
   viewGames,
-  viewRows,
   columnsToRows
 } = require('./read')
 const { analyzeDocument } = require('./textract')

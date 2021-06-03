@@ -1,4 +1,4 @@
-const { groupBy, sortBy, sum } = require('lodash')
+const { groupBy, sum } = require('lodash')
 
 const textractToColumns = ({ Blocks }) => {
   const byId = Blocks.reduce((out, block) => {
@@ -168,7 +168,7 @@ const viewGames = ({ games }) => {
   </head>
   <table>
     <thead><tr>${rows[0]
-      .map(({ text }, index) => `<th>#${index + 1}</th>`)
+      .map((_, index) => `<th>#${index + 1}</th>`)
       .join('')}</tr></thead>
     <tbody>
       ${rows

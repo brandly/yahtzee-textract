@@ -1,4 +1,3 @@
-const fs = require('fs')
 const { Textract } = require('aws-sdk')
 const textract = new Textract({ region: 'us-east-1' })
 
